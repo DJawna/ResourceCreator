@@ -7,7 +7,7 @@ namespace Resourcecreator;
 internal class App
 {
 
-    public static void Start(IPersistence persistence) {
+    public static void Start(IPersistence persistence, string? resourceFile) {
         /*
         var mainWindow = new MainWindow();
         mainWindow.Persistence = new HomeFolderPersistence();
@@ -24,7 +24,11 @@ internal class App
         var menu = new MenuBar(new MenuBarItem[]{
             new MenuBarItem ("_File", new MenuItem []{
                 new MenuItem("_New", "create new resource file", () => {
-                    var filePicker = new SaveDialog(title: "New resource", message: "Create a new file for the Resource", allowedTypes: new List<string>{".resx"});
+                    var filePicker = new SaveDialog(title: "New resource", 
+                                                    message: "Create a new file for the Resource", 
+                                                    allowedTypes: new List<string>{".resx"});
+                    
+                    filePicker.DirectoryPath = persistence.CurrentWorkFolder;
                     Application.Run(filePicker);
                     if(!filePicker.Canceled) {
                         persistence.CurrentlySelectedResource = (string) filePicker.FilePath;
@@ -32,22 +36,16 @@ internal class App
                         mainWindow.SetDataTable(new Dictionary<string, string>{
                             {"example1", "Value one"},
                         });
+
                     }
                     
                 }),
                 new MenuItem("_Open", "Open new resource file", () => {
                     var filePicker = new OpenDialog(title: "Open resource", message: "Pick an existing resource file", allowedTypes: new List<string>{".resx"});
+                    filePicker.DirectoryPath = persistence.CurrentWorkFolder;
                     Application.Run(filePicker);
                     if(!filePicker.Canceled) {
-                        try {
-                            using var fs = new FileStream(path: (string) filePicker.FilePath, mode: FileMode.Open, access: FileAccess.Read);
-                            var resEditor = new ResXLib.ResourceEditor();
-                            mainWindow.SetDataTable(resEditor.ReadResxToDictionary(fs));
-                            mainWindow.CurrentFile =(string)filePicker.FilePath;
-                            persistence.CurrentlySelectedResource = (string) filePicker.FilePath;
-                        } catch(Exception ex) {
-                            MessageBox.ErrorQuery("Error",$"Error during loading of the Resource: {ex.Message}", "Ok");
-                        }
+                        LoadFile((string) filePicker.FilePath, mainWindow, persistence);
                     }
                 }),
                 new MenuItem("_Save", "Save the current data", ()=> {
@@ -76,9 +74,25 @@ internal class App
         mainWindow.CurrentFile =(persistence.CurrentlySelectedResource ?? "<None>");
 
         Application.Top.Add(menu, mainWindow);
+        if (resourceFile!= null) {
+            LoadFile(resourceFile, mainWindow, persistence);
+        }
         Application.Run();
 
         Application.Shutdown();
+    }
+
+    public static void LoadFile(string resourceFile, MainWindow mainWindow, IPersistence persistence) {
+
+        try {
+            using var fs = new FileStream(path: resourceFile, mode: FileMode.Open, access: FileAccess.Read);
+            var resEditor = new ResXLib.ResourceEditor();
+            mainWindow.SetDataTable(resEditor.ReadResxToDictionary(fs));
+            mainWindow.CurrentFile = resourceFile;
+            persistence.CurrentlySelectedResource = resourceFile;
+        } catch(Exception ex) {
+            MessageBox.ErrorQuery("Error",$"Error during loading of the Resource: {ex.Message}", "Ok");
+        }
     }
 
 

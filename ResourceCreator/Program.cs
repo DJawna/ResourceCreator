@@ -5,7 +5,10 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-
-        App.Start(new HomeFolderPersistence());
+        string? resourceFile = null;
+        if (args.Length > 0) {
+            resourceFile= args[0];
+        }
+        App.Start(new HomeFolderPersistence(), resourceFile);
     }
 }
