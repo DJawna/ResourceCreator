@@ -42,8 +42,12 @@ public class ResourceEditor {
             
             var nameAttribute = newXml.CreateAttribute("name");
             nameAttribute.Value = key;
+            var xmlSpaceAttribute = newXml.CreateAttribute("xml:space");
+            xmlSpaceAttribute.Value = "preserve";
+
             
             _= newDataNode.Attributes!.Append(nameAttribute);
+            _= newDataNode.Attributes!.Append(xmlSpaceAttribute);
 
             var valueNode = newXml.CreateNode(XmlNodeType.Element,"value","");
             valueNode.InnerText = value;
@@ -57,6 +61,4 @@ public class ResourceEditor {
         ms.Position = 0;
         return ms;
     }
-
-
 }
