@@ -19,15 +19,6 @@ internal class HomeFolderPersistence : IPersistence
         CurrentProfile = LoadProfile(ProfileFile);
     }
 
-    public string? CurrentlySelectedResource { 
-        get => CurrentProfile.CurrentResourceFile; 
-        set {
-            CurrentProfile.CurrentResourceFile = value;
-            CurrentProfile.LastWorkFolder = System.IO.Path.GetDirectoryName(CurrentProfile.CurrentResourceFile);
-            SaveProfile(CurrentProfile, ProfileFile);
-        }
-    }
-
     public string CurrentWorkFolder {
         get => CurrentProfile.LastWorkFolder ?? DefaultWorkFolder;
         set {

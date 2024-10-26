@@ -53,30 +53,36 @@ internal class MainWindow : View{
         data = new DataTable();
         data.Columns.Add(new DataColumn("Key"));
         data.Columns.Add(new DataColumn("Value"));
-        var currentFileView = new FrameView("CurrentFile:", new Border{ BorderStyle = BorderStyle.Single }){
+        var currentFileView = new FrameView(){
+            Title= "CurrentFile:", 
+            BorderStyle= LineStyle.Single,
             Width=Dim.Fill(),
-            Height = Dim.Percent(10f)
+            Height = Dim.Percent(10)
         };
 
         currentFileLabel = new Label(){
         };
         currentFileView.Add(currentFileLabel);
 
-        var resourceEditView = new FrameView("ResourceContent:", new Border{ BorderStyle = BorderStyle.Single }){
+        var resourceEditView = new FrameView {
+            Title ="ResourceContent:", 
+            BorderStyle =LineStyle.Single, 
             Y = Pos.Bottom(currentFileView),
             Width=Dim.Fill(),
-            Height = Dim.Percent(90f)
+            Height = Dim.Percent(90)
         };
-        placeHolder= new Label(text: "No Data loaded!", autosize: true){
+        placeHolder= new Label {
+            Text ="No Data loaded!",
             Width=Dim.Fill(),
-            Height = Dim.Percent(100f)
+            Height = Dim.Percent(100)
         };
-        addRowButton = new Button(text: "add Row") {
+        addRowButton = new Button{
+            Text= "add Row",
             Width= Dim.Fill(),
-            Height = Dim.Percent(10f),
+            Height = Dim.Percent(10),
             Visible = false
         };
-        addRowButton.Clicked += () => {
+        addRowButton.MouseClick += (sender, mouseEventArgs) => {
             bool textEntered = GetText("Add Row", "Pick a new Keyname...", "<exampleKey>", out string enteredText);
             if (textEntered) {
                 var row = data.NewRow();
@@ -87,29 +93,34 @@ internal class MainWindow : View{
             resourceTable?.Update();
         };
 
-        resourceTable = new TableView(data){
+        resourceTable = new TableView{ 
+            Table = new DataTableSource(data),
             Y= Pos.Bottom(addRowButton),
             Width=Dim.Fill(),
-            Height = Dim.Percent(90f),
+            Height = Dim.Percent(90),
             Visible = false
         };
 
         resourceTable.CellActivated += EditCurrentCell;
-        resourceEditView.Add(placeHolder, addRowButton, resourceTable);
+        resourceEditView.Add(
+            placeHolder, 
+            addRowButton, 
+            resourceTable
+        );
         Add(currentFileView, resourceEditView);
     }
 
 
-		private void EditCurrentCell (TableView.CellActivatedEventArgs e)
+		private void EditCurrentCell (object? sender, CellActivatedEventArgs e)
 		{
 			if (e.Table == null)
 				return;
 
-			var oldValue = e.Table.Rows [e.Row] [e.Col].ToString ();
+			var oldValue = e.Table[e.Row, e.Col].ToString ();
 
-			if (GetText ("Enter new value", e.Table.Columns [e.Col].ColumnName, oldValue, out string newText)) {
+			if (GetText ("Enter new value",e.Table.ColumnNames[e.Col] , oldValue, out string newText)) {
 				try {
-					e.Table.Rows [e.Row] [e.Col] = string.IsNullOrWhiteSpace (newText) ? DBNull.Value : (object)newText;
+					data.Rows [e.Row] [e.Col] = string.IsNullOrWhiteSpace (newText) ? DBNull.Value : (object)newText;
                     Dirty = true;
 				} catch (Exception ex) {
 					MessageBox.ErrorQuery (60, 20, "Failed to set text", ex.Message, "Ok");
@@ -123,11 +134,19 @@ internal class MainWindow : View{
 		{
 			bool okPressed = false;
 
-			var ok = new Button ("Ok", is_default: true);
-			ok.Clicked += () => { okPressed = true; Application.RequestStop (); };
-			var cancel = new Button ("Cancel");
-			cancel.Clicked += () => { Application.RequestStop (); };
-			var d = new Dialog (title, 60, 20, ok, cancel);
+			var ok = new Button {
+                Text= "Ok", 
+                IsDefault = true
+            };
+			ok.MouseClick += (sender, eventargs) => { okPressed = true; Application.RequestStop (); };
+			var cancel = new Button {Text = "Cancel" };
+			cancel.MouseClick += (sender, eventargs) => { Application.RequestStop (); };
+			var d = new Dialog {
+                Title =title,
+                X = 60, Y = 20 
+                }; 
+                
+            d.Add(ok, cancel);
 
 			var lbl = new Label () {
 				X = 0,

@@ -21,18 +21,20 @@ internal class App
             Height = Dim.Fill() -1
         };
 
-        var menu = new MenuBar(new MenuBarItem[]{
+        var menu = new MenuBar() {
+            Menus = new MenuBarItem[]{
             new MenuBarItem ("_File", new MenuItem []{
                 new MenuItem("_New", "create new resource file", () => {
-                    var filePicker = new SaveDialog(title: "New resource", 
-                                                    message: "Create a new file for the Resource", 
-                                                    allowedTypes: new List<string>{".resx"});
+                    var filePicker = new SaveDialog(){
+                        Title = "Pick file for New Resource",
+                        AllowedTypes = new List<IAllowedType>{new AllowedType("Microsoft resource file", [".resx"])},
+                        Path = persistence.CurrentWorkFolder
+                    };
                     
-                    filePicker.DirectoryPath = persistence.CurrentWorkFolder;
                     Application.Run(filePicker);
                     if(!filePicker.Canceled) {
-                        persistence.CurrentlySelectedResource = (string) filePicker.FilePath;
-                        mainWindow.CurrentFile =(string)filePicker.FilePath;
+                        persistence.CurrentWorkFolder = Path.GetDirectoryName(filePicker.Path) ?? "./";
+                        mainWindow.CurrentFile =filePicker.FileName;
                         mainWindow.SetDataTable(new Dictionary<string, string>{
                             {"example1", "Value one"},
                         });
@@ -41,11 +43,15 @@ internal class App
                     
                 }),
                 new MenuItem("_Open", "Open new resource file", () => {
-                    var filePicker = new OpenDialog(title: "Open resource", message: "Pick an existing resource file", allowedTypes: new List<string>{".resx"});
-                    filePicker.DirectoryPath = persistence.CurrentWorkFolder;
+                    var filePicker = new OpenDialog() {
+                        Title = "Open resource: Pick an existing resource file", 
+                        AllowedTypes = new List<IAllowedType>{ new AllowedType(description: "Microsoft resource files", [".resx"])},
+                        Path = persistence.CurrentWorkFolder,
+                        AllowsMultipleSelection = false
+                    };
                     Application.Run(filePicker);
                     if(!filePicker.Canceled) {
-                        LoadFile((string) filePicker.FilePath, mainWindow, persistence);
+                        LoadFile(filePicker.FilePaths.First(), mainWindow, persistence);
                     }
                 }),
                 new MenuItem("_Save", "Save the current data", ()=> {
@@ -69,15 +75,18 @@ internal class App
                     }
                 })
             })
-        });
+        }
+        };
 
-        mainWindow.CurrentFile =(persistence.CurrentlySelectedResource ?? "<None>");
+        mainWindow.CurrentFile ="<None>";
 
-        Application.Top.Add(menu, mainWindow);
+        var topLevel = new Toplevel();
+        topLevel.Add(menu, mainWindow);
+
         if (resourceFile!= null) {
             LoadFile(resourceFile, mainWindow, persistence);
         }
-        Application.Run();
+        Application.Run(topLevel);
 
         Application.Shutdown();
     }
@@ -89,7 +98,7 @@ internal class App
             var resEditor = new ResXLib.ResourceEditor();
             mainWindow.SetDataTable(resEditor.ReadResxToDictionary(fs));
             mainWindow.CurrentFile = resourceFile;
-            persistence.CurrentlySelectedResource = resourceFile;
+            persistence.CurrentWorkFolder = Path.GetDirectoryName(resourceFile) ?? "./";
         } catch(Exception ex) {
             MessageBox.ErrorQuery("Error",$"Error during loading of the Resource: {ex.Message}", "Ok");
         }
@@ -100,7 +109,7 @@ internal class App
         try {
             var currentData= mainWindow.GetFromDataTable();
             var resEditor = new ResXLib.ResourceEditor();
-            using var fs = new FileStream(path: persistence.CurrentlySelectedResource, mode: FileMode.OpenOrCreate, access: FileAccess.Write);
+            using var fs = new FileStream(path: mainWindow.CurrentFile, mode: FileMode.OpenOrCreate, access: FileAccess.Write);
             var result = resEditor.WriteResxToDictionary(currentData);
             result.CopyTo(fs);
             fs.Close();
