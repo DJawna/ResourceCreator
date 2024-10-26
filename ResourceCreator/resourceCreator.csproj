@@ -8,8 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ResXLib" Version="1.0.0" />
     <PackageReference Include="Terminal.Gui" Version="1.17.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ResXLib\ResXLib.csproj" />
   </ItemGroup>
 
 </Project>
