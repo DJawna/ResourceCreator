@@ -25,8 +25,9 @@ internal class MainWindow : View{
             row["Value"] = value;
             data.Rows.Add(row);
         }
-        placeHolder.Height = Dim.Percent(0f);
-        resourceTable.Height = Dim.Percent(100f);
+        placeHolder.Visible =false;
+        addRowButton.Visible = true;
+        resourceTable.Visible = true;
     }
 
     public bool Dirty {get;set;}
@@ -45,6 +46,7 @@ internal class MainWindow : View{
 
     private readonly Label placeHolder;
     private readonly TableView resourceTable;
+    private readonly Button addRowButton;
 
     public MainWindow () {
         Dirty = false;
@@ -69,14 +71,31 @@ internal class MainWindow : View{
             Width=Dim.Fill(),
             Height = Dim.Percent(100f)
         };
+        addRowButton = new Button(text: "add Row") {
+            Width= Dim.Fill(),
+            Height = Dim.Percent(10f),
+            Visible = false
+        };
+        addRowButton.Clicked += () => {
+            bool textEntered = GetText("Add Row", "Pick a new Keyname...", "<exampleKey>", out string enteredText);
+            if (textEntered) {
+                var row = data.NewRow();
+                row["Key"] = enteredText;
+                data.Rows.Add(row);
+            }
+            Dirty = true;
+            resourceTable?.Update();
+        };
 
         resourceTable = new TableView(data){
+            Y= Pos.Bottom(addRowButton),
             Width=Dim.Fill(),
-            Height = Dim.Percent(0f)
+            Height = Dim.Percent(90f),
+            Visible = false
         };
 
         resourceTable.CellActivated += EditCurrentCell;
-        resourceEditView.Add(placeHolder, resourceTable);
+        resourceEditView.Add(placeHolder, addRowButton, resourceTable);
         Add(currentFileView, resourceEditView);
     }
 
