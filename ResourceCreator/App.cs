@@ -122,10 +122,10 @@ internal class App
         try {
             var currentData= mainWindow.GetFromDataTable();
             var resEditor = new ResXLib.ResourceEditor();
-            using var fs = new FileStream(path: mainWindow.CurrentFile, mode: FileMode.OpenOrCreate, access: FileAccess.Write);
+            using var fs = new MemoryStream();
             var result = resEditor.WriteResxToDictionary(currentData);
             result.CopyTo(fs);
-            fs.Close();
+            File.WriteAllBytes(mainWindow.CurrentFile,fs.ToArray());
             mainWindow.Dirty = false;
         } catch (Exception ex) {
             MessageBox.ErrorQuery("Error",$"Error during saving process: {ex.Message}", "Ok");
