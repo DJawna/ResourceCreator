@@ -20,6 +20,14 @@ internal class App
             Menus = new MenuBarItem[]{
             new MenuBarItem ("_File", new MenuItem []{
                 new MenuItem("_New", "create new resource file", () => {
+                    if (mainWindow.Dirty) {
+                        var result = MessageBox.ErrorQuery("unsaved changes","you have unsaved changes", ["Save old, create New", "Cancel"]);
+                        if (0 ==result) {
+                            SaveCurrentFile(mainWindow, persistence);
+                        }
+                    }
+                    mainWindow.UnsetData();
+
                     var filePicker = new SaveDialog(){
                         Title = "Pick file for New Resource",
                         AllowedTypes = new List<IAllowedType>{new AllowedType("Microsoft resource file", [".resx"])},
@@ -54,6 +62,15 @@ internal class App
                     if (mainWindow.Dirty) {
                         SaveCurrentFile(mainWindow, persistence);
                     }
+                }),
+                new MenuItem("_Close", "Close current data", () => {
+                    if (mainWindow.Dirty) {
+                        var result= MessageBox.ErrorQuery("unsaved changes","There are unsaved changes, what do you want to do?", ["Save and Close", "Cancel"]);
+                        if (result == 1 || result == -1) {
+                            return;
+                        }
+                    }
+                    mainWindow.UnsetData();
                 }),
                 new MenuItem("_Quit", "Stop the app", () => {
                     if (mainWindow.Dirty) {

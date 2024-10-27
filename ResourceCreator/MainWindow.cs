@@ -17,7 +17,15 @@ internal class MainWindow : View{
     private readonly Label currentFileLabel;
     private readonly DataTable data;
 
+    public void UnsetData() {
+        Dirty = false;
+        data.Rows.Clear();
+        placeHolder.Visible = true;
+        addRowButton.Visible = false;
+        resourceTable.Visible = false;
+        CurrentFile = "<None>";
 
+    }
     public void SetDataTable(Dictionary<string,string> resourceData) {
         foreach((var key, var value) in resourceData) {
             var row = data.NewRow();
