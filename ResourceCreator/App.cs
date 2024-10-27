@@ -8,11 +8,6 @@ internal class App
 {
 
     public static void Start(IPersistence persistence, string? resourceFile) {
-        /*
-        var mainWindow = new MainWindow();
-        mainWindow.Persistence = new HomeFolderPersistence();
-        */
-
         Application.Init();
         var mainWindow = new MainWindow(){
             X= 0,
@@ -38,6 +33,7 @@ internal class App
                         mainWindow.SetDataTable(new Dictionary<string, string>{
                             {"example1", "Value one"},
                         });
+                        mainWindow.Dirty = true;
 
                     }
                     

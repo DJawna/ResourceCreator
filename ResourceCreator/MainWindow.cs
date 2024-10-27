@@ -7,7 +7,7 @@ internal class MainWindow : View{
 
     public string CurrentFile  
     {   get {
-            return (string) currentFileLabel.Text;
+            return currentFileLabel.Text;
         } 
         set {
             currentFileLabel.Text = value;
@@ -57,10 +57,14 @@ internal class MainWindow : View{
             Title= "CurrentFile:", 
             BorderStyle= LineStyle.Single,
             Width=Dim.Fill(),
-            Height = Dim.Percent(10)
+            Height = Dim.Auto()
+            
         };
 
         currentFileLabel = new Label(){
+            Height = Dim.Auto(),
+            Width = Dim.Fill(),
+            Text = "<None>"
         };
         currentFileView.Add(currentFileLabel);
 
@@ -69,7 +73,7 @@ internal class MainWindow : View{
             BorderStyle =LineStyle.Single, 
             Y = Pos.Bottom(currentFileView),
             Width=Dim.Fill(),
-            Height = Dim.Percent(90)
+            Height = Dim.Fill()
         };
         placeHolder= new Label {
             Text ="No Data loaded!",
@@ -134,37 +138,41 @@ internal class MainWindow : View{
 		{
 			bool okPressed = false;
 
-			var ok = new Button {
-                Text= "Ok", 
-                IsDefault = true
-            };
-			ok.MouseClick += (sender, eventargs) => { okPressed = true; Application.RequestStop (); };
-			var cancel = new Button {Text = "Cancel" };
-			cancel.MouseClick += (sender, eventargs) => { Application.RequestStop (); };
-			var d = new Dialog {
-                Title =title,
-                X = 60, Y = 20 
-                }; 
-                
-            d.Add(ok, cancel);
-
 			var lbl = new Label () {
-				X = 0,
-				Y = 1,
-				Text = label
+				Text = label,
+                Width = Dim.Fill()
 			};
 
 			var tf = new TextField () {
 				Text = initialText,
-				X = 0,
-				Y = 2,
-				Width = Dim.Fill ()
+                X = Pos.Bottom(lbl),
+				Width = Dim.Fill (),
+                Height = Dim.Fill ()
 			};
 
-			d.Add (lbl, tf);
+			var ok = new Button {
+                Text= "Ok", 
+                IsDefault = true
+            };
+
+			ok.Accept += (sender, eventargs) => { okPressed = true; Application.RequestStop (); };
+
+			var cancel = new Button {
+                Text = "Cancel"
+             };
+
+
+			cancel.Accept += (sender, eventargs) => { Application.RequestStop (); };
+
+			var dialog = new Dialog {
+                Title =title,
+                //X = 60, Y = 20 
+                Buttons =  [ok, cancel],
+                }; 
+            dialog.Add(lbl,tf);
 			tf.SetFocus ();
 
-			Application.Run (d);
+			Application.Run (dialog);
 
 			enteredText = okPressed ? tf.Text.ToString () : null;
 			return okPressed;
