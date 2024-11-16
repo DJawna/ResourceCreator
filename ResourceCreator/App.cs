@@ -1,3 +1,4 @@
+using System.Reflection;
 using Resourcecreator.Services.Api;
 using Resourcecreator.Services.Impl;
 using Terminal.Gui;
@@ -72,6 +73,16 @@ internal class App
                     }
                     mainWindow.UnsetData();
                 }),
+                new MenuItem("_About", "Get the Information about the app", () => {
+                    string versionInfo = Assembly.GetExecutingAssembly()?.GetName()?.Version?.ToString() ?? "unknown Version";
+                    var appInfo =
+                    $"""
+                        The Resource creation app:
+                        Version: {versionInfo}
+                    """;
+                    MessageBox.Query(title: "App information", message: appInfo,["Dismiss"]);
+                })
+                ,
                 new MenuItem("_Quit", "Stop the app", () => {
                     if (mainWindow.Dirty) {
                         var choice = MessageBox.Query("Unsaved changes", "Do you want to save the current file?", "SaveAndQuit", "DiscardAndQuit", "Cancel");
